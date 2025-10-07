@@ -89,13 +89,13 @@ GetProducts: (data, callback) => {
       );
     }
 
-    const query = `
-      INSERT INTO contactus (name, number, message, created_at)
-      VALUES (?, ?, ?, NOW())
-    `;
+    // const query = `
+    //   INSERT INTO contactus (name, number, message, created_at)
+    //   VALUES (?, ?, ?, NOW())
+    // `;
 
-    db.query(query, [name, number, message], (err, result) => {
-      if (err) return callback(err);
+    // db.query(query, [name, number, message], (err, result) => {
+    //   if (err) return callback(err);
 
       // ✅ After saving, send email
       let transporter = nodemailer.createTransport({
@@ -145,7 +145,7 @@ GetProducts: (data, callback) => {
           email: "sent",
         });
       });
-    });
+    // });
   },
   gettrproducts:(data, callback)=>{
   const query = `
