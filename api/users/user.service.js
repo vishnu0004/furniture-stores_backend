@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer");
 
 module.exports = {
 GetProducts: (data, callback) => {
-  console.log(data);
+  // console.log(data);
 
   const category_id = data.query?.id; // ✅ extract id safely
 
@@ -60,7 +60,7 @@ GetProducts: (data, callback) => {
 
     const id = data.query.id; // get product ID from input
 
-    console.log(id);
+    // console.log(id);
 
     if (!id) return callback(null, null); // if no ID, return null
 
@@ -78,75 +78,106 @@ GetProducts: (data, callback) => {
     });
   },
   contactus: (data, callback) => {
+  const { name, number, message } = data.body;
 
-    const { name, number, message } = data.body;
-        // console.log(name,number,message);
+  if (!name || !number || !message) {
+    return callback(new Error("All fields (name, number, message) are required"));
+  }
 
+  const query = `
+    INSERT INTO contactus (name, number, message, created_at)
+    VALUES (?, ?, ?, NOW())
+  `;
 
-    if (!name || !number || !message) {
-      return callback(
-        new Error("All fields (name, number, message) are required")
-      );
-    }
+  db.query(query, [name, number, message], (err, result) => {
+    if (err) return callback(err);
 
-    // const query = `
-    //   INSERT INTO contactus (name, number, message, created_at)
-    //   VALUES (?, ?, ?, NOW())
-    // `;
+    // ✅ Create WhatsApp link (replace with your WhatsApp number)
+    const adminNumber = "918320955139"; // 👈 your WhatsApp number in international format (no + sign)
+    const encodedMessage = encodeURIComponent(
+      `📩 नई पूछताछ प्राप्त हुई!\n\nनाम: ${name}\nफ़ोन: ${number}\nसंदेश:\n${message}`
+    );
+    const whatsappLink = `https://wa.me/${adminNumber}?text=${encodedMessage}`;
 
-    // db.query(query, [name, number, message], (err, result) => {
-    //   if (err) return callback(err);
+    // ✅ Send response with WhatsApp link
+    return callback(null, {
+      success: true,
+      insertId: result.insertId,
+      whatsappLink: whatsappLink,
+    });
+  });
+},
 
-      // ✅ After saving, send email
-      let transporter = nodemailer.createTransport({
-        service: "gmail", // or SMTP settings
-        auth: {
-          user: "parvatifurniture19@gmail.com", // replace with your email
-          pass: "kdqwglakmfystkdf", // use app password, not real password
-        },
-      });
+  // contactus: (data, callback) => {
 
-
-        let mailOptions = {
-            from: `"पार्वती फर्नीचर" <parvatifurniture19@gmail.com>`,
-            to: "parvatifurniture19@gmail.com",
-            subject: `नई पूछताछ ${name} से`,
-            text: `
-        नमस्ते एडमिन,
-
-        आपको पार्वती फर्नीचर संपर्क फ़ॉर्म से एक नया संदेश प्राप्त हुआ है।
-
-        नाम: ${name}
-        फ़ोन नंबर: ${number}
-
-        संदेश:
-        ${message}
-
-        सादर,  
-        पार्वती फर्नीचर
-        `
-        };
+  //   const { name, number, message } = data.body;
+  //       // console.log(name,number,message);
 
 
+  //   if (!name || !number || !message) {
+  //     return callback(
+  //       new Error("All fields (name, number, message) are required")
+  //     );
+  //   }
+
+  //   const query = `
+  //     INSERT INTO contactus (name, number, message, created_at)
+  //     VALUES (?, ?, ?, NOW())
+  //   `;
+
+  //   db.query(query, [name, number, message], (err, result) => {
+  //     if (err) return callback(err);
+
+  //     // ✅ After saving, send email
+  //     let transporter = nodemailer.createTransport({
+  //       service: "gmail", // or SMTP settings
+  //       auth: {
+  //         user: "parvatifurniture19@gmail.com", // replace with your email
+  //         pass: "kdqwglakmfystkdf", // use app password, not real password
+  //       },
+  //     });
 
 
-      transporter.sendMail(mailOptions, (mailErr, info) => {
-        if (mailErr) {
-          console.error("Email error:", mailErr);
-          return callback(null, {
-            success: true,
-            insertId: result.insertId,
-            email: "failed",
-          });
-        }
-        return callback(null, {
-          success: true,
-          insertId: result.insertId,
-          email: "sent",
-        });
-      });
-    // });
-  },
+  //       let mailOptions = {
+  //           from: `"पार्वती फर्नीचर" <parvatifurniture19@gmail.com>`,
+  //           to: "parvatifurniture19@gmail.com",
+  //           subject: `नई पूछताछ ${name} से`,
+  //           text: `
+  //       नमस्ते एडमिन,
+
+  //       आपको पार्वती फर्नीचर संपर्क फ़ॉर्म से एक नया संदेश प्राप्त हुआ है।
+
+  //       नाम: ${name}
+  //       फ़ोन नंबर: ${number}
+
+  //       संदेश:
+  //       ${message}
+
+  //       सादर,  
+  //       पार्वती फर्नीचर
+  //       `
+  //       };
+
+
+
+
+  //     transporter.sendMail(mailOptions, (mailErr, info) => {
+  //       if (mailErr) {
+  //         console.error("Email error:", mailErr);
+  //         return callback(null, {
+  //           success: true,
+  //           insertId: result.insertId,
+  //           email: "failed",
+  //         });
+  //       }
+  //       return callback(null, {
+  //         success: true,
+  //         insertId: result.insertId,
+  //         email: "sent",
+  //       });
+  //     });
+  //   });
+  // },
   gettrproducts:(data, callback)=>{
   const query = `
         SELECT p.id, p.name, p.description, p.price, p.image, 
